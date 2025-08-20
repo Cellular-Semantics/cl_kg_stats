@@ -44,6 +44,9 @@ Acts as a quick check on dataset coverage.
 Lists datasets ranked by the number of clusters linked to them.  
 Includes an alternative version (commented) that groups by **Dataset node ID** instead of title to avoid collapsing nodes without a title.
 
+### 11_datasets_alphabetical.cypher
+Lists all datasets **alphabetically by title**.
+
 ---
 
 ## Usage Notes
@@ -51,4 +54,4 @@ Includes an alternative version (commented) that groups by **Dataset node ID** i
 - The queries are written for Neo4j 4.4.x syntax and tested on version 4.4.44.
 - You can run them individually in Neo4j Browser, or execute them programmatically via the `scripts/generate_report.py` script.  
 - Outputs are typically formatted into Markdown tables for inclusion in release notes.  
-- To add a new query, create a new file with the next available number (e.g. `11_new_metric.cypher`) and update this README with a short description.
+- To add a new query, create a new file with the next available number (e.g. `12_new_metric.cypher`) and update this README with a short description.

@@ -14,6 +14,7 @@ import glob
 import os
 import re
 from datetime import datetime
+from pathlib import Path
 from typing import List, Dict, Any, Tuple
 
 from neo4j import GraphDatabase
@@ -21,6 +22,51 @@ from jinja2 import Environment, FileSystemLoader, select_autoescape
 
 FIXED_URI = "neo4j://172.27.24.69:7687"
 TITLE_LINE_RE = re.compile(r"^\s*//\s*(?P<title>.+?)\s*$")
+SLUG_RE = re.compile(r"[^a-z0-9]+")
+
+
+def slugify(s: str) -> str:
+    s = s.lower().strip()
+    s = SLUG_RE.sub("-", s).strip("-")
+    return s or "section"
+
+
+def render_table_md(columns, rows) -> str:
+    lines = []
+    # header
+    lines.append("| " + " | ".join(columns) + " |")
+    # separator
+    lines.append("| " + " | ".join(["---"] * len(columns)) + " |")
+    # rows
+    for row in rows:
+        vals = [str(row.get(c, "")) for c in columns]
+        lines.append("| " + " | ".join(vals) + " |")
+    return "\n".join(lines) + "\n"
+
+
+def write_section_page(out_dir: str, section, index: int) -> dict:
+    """Write a standalone .md page for a section; return metadata (slug, relpath)."""
+    title = section["title"]
+    file = section["file"]
+    columns = section["columns"]
+    rows = section["rows"]
+
+    slug = f"{index:02d}-{slugify(title)}"
+    out_dir_path = Path(out_dir)
+    out_dir_path.mkdir(parents=True, exist_ok=True)
+    page_path = out_dir_path / f"{slug}.md"
+
+    if not rows:
+        body = "_No rows returned._\n"
+    else:
+        body = "\n" + render_table_md(columns, rows) + "\n"
+
+    content = f"# {title}\n\n" \
+              f"<sub><em>Source: {file}</em></sub>\n\n" \
+              f"{body}"
+
+    page_path.write_text(content, encoding="utf-8")
+    return {"slug": slug, "relpath": str(page_path)}
 
 
 def discover_queries(query_dir: str) -> List[str]:
@@ -95,6 +141,14 @@ def main():
                     "rows": rows,
                 }
             )
+
+    sections_dir = "section_pages"
+    standalone_pages = []
+    for i, s in enumerate(sections, start=1):
+        meta = write_section_page(sections_dir, s, i)
+        s["slug"] = meta["slug"]
+        s["standalone_rel"] = meta["relpath"]
+        standalone_pages.append(meta)
 
     context = {
         "generated_on": datetime.utcnow().strftime("%Y-%m-%d %H:%M UTC"),

@@ -32,6 +32,7 @@ jobs:
         run: |
           mkdir -p cl_kg/docs/reports
           cp -f report.md cl_kg/docs/reports/clkg-summary.md
+          cp -rf section_pages/* cl_kg/docs/reports/sections/
 
       - name: Create PR in CL_KG
         uses: peter-evans/create-pull-request@v6
