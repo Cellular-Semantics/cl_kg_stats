@@ -1,38 +1,25 @@
 name: Publish summary to CL_KG
 
 on:
-  workflow_dispatch:
   push:
     branches: [ main ]
     paths:
-      - 'queries/**'
-      - 'scripts/**'
-      - 'report_templates/**'
-      - 'pyproject.toml'
-      - 'poetry.lock'
+      - 'report.md'          # trigger only when the generated file changes
+  workflow_dispatch:         # allow manual runs too
 
 jobs:
-  build-and-pr:
+  publish:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout cl_kg_stats
         uses: actions/checkout@v4
 
-      - name: Set up Poetry
-        uses: abatilo/actions-poetry@v3
-        with:
-          poetry-version: "2.1.2"
-
-      - name: Install deps
+      - name: Ensure report exists
         run: |
-          poetry install
-
-      - name: Generate report
-        run: |
-          poetry run python scripts/generate_report.py \
-            --queries queries \
-            --template report_templates/release_notes.md.j2 \
-            --out report.md
+          if [ ! -f report.md ]; then
+            echo "report.md not found. Generate it locally and commit before pushing."
+            exit 1
+          fi
 
       - name: Checkout CL_KG (target repo)
         uses: actions/checkout@v4
@@ -44,17 +31,18 @@ jobs:
       - name: Copy report into CL_KG
         run: |
           mkdir -p cl_kg/docs/reports
-          cp report.md cl_kg/docs/reports/clkg-summary.md
+          cp -f report.md cl_kg/docs/reports/clkg-summary.md
 
       - name: Create PR in CL_KG
         uses: peter-evans/create-pull-request@v6
         with:
           token: ${{ secrets.CL_KG_PAT }}
           path: cl_kg
-          commit-message: "Update CL_KG summary report"
-          branch: chore/update-summary-$(date +%Y%m%d-%H%M)
-          title: "Update CL_KG summary report"
+          commit-message: "docs: update CL_KG summary report"
+          branch: docs/update-summary-${{ github.run_id }}
+          title: "docs: update CL_KG summary report"
           body: |
-            Automated update of CL_KG summary report from cl_kg_stats.
+            Automated update of CL_KG summary report from **cl_kg_stats**.
+            Source commit: ${{ github.sha }}
           labels: |
             automated, report
