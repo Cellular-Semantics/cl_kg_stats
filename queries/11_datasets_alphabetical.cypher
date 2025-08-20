@@ -1,4 +1,4 @@
-// 11 - List all dataset titles alphabetically with row numbers
+// 11 — List all dataset titles alphabetically with row numbers
 MATCH (d:Dataset)
 WHERE d.title IS NOT NULL AND trim(toString(d.title[0])) <> ''
 WITH DISTINCT toString(d.title[0]) AS dataset
