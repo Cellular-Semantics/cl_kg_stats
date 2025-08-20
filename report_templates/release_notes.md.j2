@@ -1,0 +1,34 @@
+{#
+Release notes Markdown template for CL_KG summary stats.
+
+Context expected from scripts/generate_report.py:
+  - generated_on: str
+  - neo4j_uri: str
+  - database: str
+  - sections: list of { title, file, columns, rows }
+#}
+
+# CL_KG Summary Report
+
+_Generated: {{ generated_on }}_
+
+---
+
+{% for s in sections %}
+<details>
+<summary><strong>{{ s.title }}</strong></summary>
+
+{% if s.rows | length == 0 %}
+_No rows returned._
+{% else %}
+| {{ s.columns | join(" | ") }} |
+| {% for _ in s.columns %}---{% if not loop.last %} | {% endif %}{% endfor %} |
+{% for row in s.rows -%}
+| {% for c in s.columns %}{{ row.get(c, '') }}{% if not loop.last %} | {% endif %}{% endfor %} |
+{% endfor %}
+{% endif %}
+
+</details>
+
+---
+{% endfor %}
