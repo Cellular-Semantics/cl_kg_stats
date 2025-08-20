@@ -10,7 +10,8 @@ The output is a Markdown report that gets copied into the [CL_KG repo](https://g
 - **queries/** – Cypher queries, one per file.  
 - **scripts/** – `generate_report.py` runs all queries and writes `report.md`.  
 - **report_templates/** – Jinja2 template that turns query results into Markdown.  
-- **report.md** – the generated report (not tracked in git).  
+- **section_pages/** – per-query Markdown pages, generated alongside `report.md`, used for publishing in CL_KG docs.  
+- **report.md** – the combined summary report (not tracked in git).  
 
 ---
 
