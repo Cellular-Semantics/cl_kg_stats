@@ -51,7 +51,7 @@ def write_section_page(out_dir: str, section, index: int) -> dict:
     columns = section["columns"]
     rows = section["rows"]
 
-    slug = f"{index:02d}-{slugify(title)}"
+    slug = slugify(section["title"])
     out_dir_path = Path(out_dir)
     out_dir_path.mkdir(parents=True, exist_ok=True)
     page_path = out_dir_path / f"{slug}.md"
